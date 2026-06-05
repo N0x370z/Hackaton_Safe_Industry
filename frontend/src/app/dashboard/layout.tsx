@@ -1,19 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Shield, LayoutDashboard, Bell, Menu, X, Wifi, WifiOff } from 'lucide-react'
+import { Shield, LayoutDashboard, Bell, ClipboardList, Menu, X, Wifi, WifiOff } from 'lucide-react'
 import { useDashboard } from '@/hooks/useDashboard'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [reportCount, setReportCount] = useState(0)
   const pathname = usePathname()
   const { data, connected } = useDashboard()
+
+  useEffect(() => {
+    function syncCount() {
+      try {
+        setReportCount(JSON.parse(localStorage.getItem('safe_industry_reports') || '[]').length)
+      } catch {}
+    }
+    syncCount()
+    window.addEventListener('storage', syncCount)
+    // Polled porque storage event no dispara en la misma pestaña
+    const t = setInterval(syncCount, 3000)
+    return () => { window.removeEventListener('storage', syncCount); clearInterval(t) }
+  }, [])
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} />, exact: true },
     { href: '/dashboard#alertas', label: 'Alertas', icon: <Bell size={16} />, badge: data.alerts.length },
+    { href: '/dashboard/reportes', label: 'Reportes', icon: <ClipboardList size={16} />, badge: reportCount, exact: false },
   ]
 
   const isActive = (href: string, exact: boolean) =>
@@ -66,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <span className="flex items-center gap-2.5">{item.icon}{item.label}</span>
                 {item.badge != null && item.badge > 0 && (
-                  <span className="text-[10px] font-bold bg-red-500 text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center">
+                  <span className={`text-[10px] font-bold text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center ${item.href.includes('reportes') ? 'bg-orange-500' : 'bg-red-500'}`}>
                     {item.badge}
                   </span>
                 )}
