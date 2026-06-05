@@ -1,97 +1,57 @@
-'use client'
+import Link from 'next/link'
+import { Shield, Activity, Bell, ClipboardList, ArrowRight } from 'lucide-react'
 
-import { useDashboard } from '@/hooks/useDashboard'
-import { ZoneCard } from '@/components/ZoneCard'
-import { AlertPanel } from '@/components/AlertPanel'
-import { RiskChart } from '@/components/RiskChart'
-import { Shield, Wifi, WifiOff } from 'lucide-react'
-
-export default function Dashboard() {
-  const { data, connected, selectedZone, setSelectedZone } = useDashboard()
-
-  const criticalCount = data.zones.filter((z) => z.riskLevel === 'critical').length
-  const avgRisk = Math.round(data.zones.reduce((a, z) => a + z.riskScore, 0) / data.zones.length)
-
+export default function Landing() {
   return (
-    <div className="min-h-screen bg-slate-900 text-white">
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
       {/* Header */}
-      <header className="border-b border-slate-700/60 bg-slate-900/80 backdrop-blur sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield size={20} className="text-orange-400" />
-            <span className="font-bold text-white">SafeIndustry</span>
-            <span className="text-slate-500 text-sm">· Monitor de Riesgo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {connected ? (
-              <span className="flex items-center gap-1.5 text-xs text-green-400">
-                <Wifi size={12} />
-                Conectado
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-xs text-slate-400">
-                <WifiOff size={12} />
-                Sin conexión
-              </span>
-            )}
-          </div>
+      <header className="border-b border-slate-700/60 px-6 h-14 flex items-center">
+        <div className="flex items-center gap-2">
+          <Shield size={20} className="text-orange-400" />
+          <span className="font-bold text-white">SafeIndustry</span>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        {/* KPIs */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-center">
-            <p className="text-2xl font-bold text-white">{avgRisk}</p>
-            <p className="text-xs text-slate-400 mt-1">Riesgo promedio</p>
+      {/* Hero */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-8">
+        <div className="flex flex-col items-center gap-4 max-w-xl">
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+            <Shield size={32} className="text-orange-400" />
           </div>
-          <div className={`rounded-xl border p-4 text-center ${criticalCount > 0 ? 'border-red-500/40 bg-red-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
-            <p className={`text-2xl font-bold ${criticalCount > 0 ? 'text-red-400' : 'text-white'}`}>{criticalCount}</p>
-            <p className="text-xs text-slate-400 mt-1">Zonas críticas</p>
-          </div>
-          <div className={`rounded-xl border p-4 text-center ${data.alerts.length > 0 ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
-            <p className={`text-2xl font-bold ${data.alerts.length > 0 ? 'text-yellow-400' : 'text-white'}`}>{data.alerts.length}</p>
-            <p className="text-xs text-slate-400 mt-1">Alertas activas</p>
-          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight">
+            SafeIndustry
+          </h1>
+          <p className="text-slate-400 text-lg leading-relaxed">
+            Sistema de detección temprana y gestión predictiva de fauna nociva para la industria alimentaria.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Zones grid */}
-          <div className="lg:col-span-2">
-            <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Zonas del establecimiento</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {data.zones.map((zone) => (
-                <ZoneCard
-                  key={zone.id}
-                  zone={zone}
-                  selected={selectedZone?.id === zone.id}
-                  onClick={() => setSelectedZone(zone.id === selectedZone?.id ? null : zone)}
-                />
-              ))}
+        {/* Features */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+          {[
+            { icon: <Activity size={18} />, title: 'Monitoreo en tiempo real', desc: 'Sensores por zona del establecimiento' },
+            { icon: <Bell size={18} />, title: 'Alertas predictivas', desc: 'Detecta riesgos antes de que escalen' },
+            { icon: <ClipboardList size={18} />, title: 'Reporte de incidencias', desc: 'Documenta lo que observas en campo' },
+          ].map((f) => (
+            <div key={f.title} className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-left flex flex-col gap-2">
+              <span className="text-orange-400">{f.icon}</span>
+              <p className="text-sm font-semibold text-white">{f.title}</p>
+              <p className="text-xs text-slate-400">{f.desc}</p>
             </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="flex flex-col gap-6">
-            {/* Alerts */}
-            <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-              <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">
-                Alertas activas
-              </h2>
-              <AlertPanel alerts={data.alerts} />
-            </div>
-
-            {/* Chart */}
-            <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-              <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">
-                Tendencia de riesgo
-              </h2>
-              <p className="text-xs text-slate-500 mb-3">Zona de mayor riesgo — últimos 60 min</p>
-              <RiskChart data={data.history} />
-            </div>
-          </div>
+          ))}
         </div>
+
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 font-bold text-white transition-colors text-sm"
+        >
+          Ir al Dashboard <ArrowRight size={16} />
+        </Link>
       </main>
+
+      <footer className="text-center text-xs text-slate-600 py-4">
+        Hackathon Safe Industry 2026
+      </footer>
     </div>
   )
 }

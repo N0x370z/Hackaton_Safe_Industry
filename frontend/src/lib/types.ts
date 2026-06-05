@@ -8,6 +8,11 @@ export interface SensorReading {
   structuralOk: boolean
 }
 
+export interface HistoryPoint {
+  time: string
+  riskScore: number
+}
+
 export interface Zone {
   id: string
   name: string
@@ -15,6 +20,7 @@ export interface Zone {
   riskScore: number
   riskLevel: RiskLevel
   lastUpdated: string
+  history: HistoryPoint[]
 }
 
 export interface Alert {
@@ -26,14 +32,22 @@ export interface Alert {
   timestamp: string
 }
 
-export interface HistoryPoint {
-  time: string
-  riskScore: number
-  zone: string
-}
-
 export interface DashboardData {
   zones: Zone[]
   alerts: Alert[]
-  history: HistoryPoint[]
+}
+
+export type ReportType =
+  | 'insecto_avistado'
+  | 'roedor_avistado'
+  | 'residuos_acumulados'
+  | 'dano_estructural'
+  | 'mal_olor'
+  | 'otro'
+
+export interface ReportPayload {
+  zoneId: string
+  zoneName: string
+  type: ReportType
+  description: string
 }
