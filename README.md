@@ -12,10 +12,10 @@ El control de plagas en la industria alimentaria es reactivo: se actúa cuando l
 
 ## La solución
 
-Dashboard en tiempo real que:
-- Recibe lecturas de sensores IoT (o simuladas) por zona del establecimiento
+Dashboard web que:
+- Consulta lecturas de sensores IoT (o simuladas) por zona del establecimiento
 - Calcula un **score de riesgo** usando un modelo predictivo entrenado con datos ambientales
-- Emite **alertas automáticas** cuando el riesgo supera el umbral crítico
+- Muestra **alertas automáticas** cuando el riesgo supera el umbral crítico
 - Permite al encargado intervenir de forma mínima y preventiva antes de que haya infestación
 
 ---
@@ -24,10 +24,10 @@ Dashboard en tiempo real que:
 
 | Capa | Tecnología |
 |---|---|
-| Backend | FastAPI (Python) |
+| Backend | Django + Django REST Framework |
 | Modelo predictivo | scikit-learn + pandas |
 | Base de datos | MySQL |
-| Tiempo real | WebSockets |
+| Comunicación | REST API (polling cada 5s) |
 | Frontend | Next.js + Recharts |
 | Simulación IoT | Script Python generador de datos |
 
@@ -39,20 +39,20 @@ Dashboard en tiempo real que:
 [Sensores / Simulador IoT]
          |
          v
-   [FastAPI Backend]
-   - Recibe lecturas
+   [Django REST Backend]
+   - Recibe lecturas de sensores
    - Ejecuta modelo ML
    - Calcula score de riesgo
-   - Emite alertas vía WebSocket
+   - Expone endpoints REST
          |
          v
    [MySQL — histórico]
          |
          v
-   [Next.js Dashboard]
-   - Mapa de zonas del establecimiento
+   [Next.js Dashboard]  ←── polling cada 5s ──→  GET /api/dashboard/
+   - Zonas del establecimiento
    - Gráficas de tendencia por sensor
-   - Panel de alertas en tiempo real
+   - Panel de alertas
    - Historial de lecturas
 ```
 
@@ -63,30 +63,50 @@ Dashboard en tiempo real que:
 ```
 Hackaton_Safe_Industry/
 ├── backend/
-│   ├── main.py              # FastAPI app + WebSockets
-│   ├── model/
-│   │   ├── train.py         # Entrenamiento del modelo
-│   │   └── predictor.py     # Inferencia
-│   ├── routes/
-│   │   ├── sensors.py       # Endpoints de lecturas
-│   │   └── alerts.py        # Endpoints de alertas
-│   ├── db/
-│   │   ├── connection.py
-│   │   └── schema.sql
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── safe_industry/       # Proyecto Django
+│   │   └── settings.py
+│   ├── monitor/             # App principal
+│   │   ├── models.py        # Zone, SensorReading, Alert
+│   │   ├── serializers.py
+│   │   ├── views.py         # Endpoints REST
+│   │   ├── urls.py
+│   │   └── ml/
+│   │       ├── train.py     # Entrenamiento del modelo
+│   │       └── predictor.py # Inferencia de riesgo
 │   └── simulator.py         # Generador de datos IoT
 ├── frontend/
-│   ├── app/
-│   │   ├── page.tsx         # Dashboard principal
-│   │   ├── zones/           # Vista por zona
-│   │   └── alerts/          # Panel de alertas
-│   ├── components/
-│   │   ├── RiskGauge.tsx    # Medidor de riesgo
-│   │   ├── SensorCard.tsx   # Tarjeta por sensor
-│   │   └── AlertBanner.tsx  # Banner de alertas
-│   └── lib/
-│       └── websocket.ts     # Cliente WebSocket
+│   ├── src/
+│   │   ├── app/
+│   │   │   └── page.tsx     # Dashboard principal
+│   │   ├── components/
+│   │   │   ├── ZoneCard.tsx
+│   │   │   ├── RiskGauge.tsx
+│   │   │   ├── SensorCard.tsx
+│   │   │   ├── AlertPanel.tsx
+│   │   │   └── RiskChart.tsx
+│   │   ├── hooks/
+│   │   │   └── useDashboard.ts  # Polling REST API
+│   │   └── lib/
+│   │       ├── types.ts
+│   │       ├── mockData.ts
+│   │       └── utils.ts
+│   └── package.json
 └── README.md
 ```
+
+---
+
+## Endpoints REST
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/api/dashboard/` | Zonas, alertas e historial completo |
+| `GET` | `/api/zones/` | Lista de zonas |
+| `GET` | `/api/zones/<id>/` | Detalle de una zona |
+| `POST` | `/api/sensors/` | Recibir lectura de sensor |
+| `GET` | `/api/alerts/` | Alertas activas |
 
 ---
 
@@ -108,7 +128,8 @@ Hackaton_Safe_Industry/
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn main:app --reload
+python manage.py migrate
+python manage.py runserver
 ```
 
 ### Simulador IoT
@@ -124,16 +145,19 @@ npm install
 npm run dev
 ```
 
+El frontend corre en `http://localhost:3000` y consulta el backend en `http://localhost:8000`.  
+Si el backend no está disponible, el dashboard usa datos simulados automáticamente.
+
 ---
 
 ## Equipo
 
 | Rol | Responsabilidad |
 |---|---|
-| Backend / ML | FastAPI + modelo predictivo + WebSockets |
-| Backend / DB | Esquema MySQL + endpoints REST + datos simulados |
-| Frontend | Dashboard Next.js + gráficas + mapa de zonas |
-| Frontend / UX | UI + sistema de alertas + demo |
+| Backend / ML | Django REST Framework + modelo predictivo |
+| Backend / DB | Modelos MySQL + endpoints + datos simulados |
+| Frontend | Dashboard Next.js + gráficas + zonas |
+| Frontend / UX | UI + panel de alertas + demo |
 
 ---
 
