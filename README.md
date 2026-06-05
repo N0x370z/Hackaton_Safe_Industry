@@ -1,22 +1,24 @@
-# Safe Industry — Gestión Predictiva de Fauna Nociva
+# PlagueTracker — Detección Visual de Plagas
 
 **Hackathon Safe Industry · Track 2**
 
-Sistema de detección temprana y predicción de riesgo de infestaciones en establecimientos de la industria alimentaria. Monitorea condiciones ambientales en tiempo real y anticipa problemas antes de que ocurran.
+Sistema de detección temprana de fauna nociva mediante **cámaras e inteligencia artificial** para establecimientos de la industria alimentaria. Analiza imágenes en tiempo real, calcula un score de riesgo por zona y genera alertas automáticas antes de que el problema escale.
 
 ---
 
 ## El problema
 
-El control de plagas en la industria alimentaria es reactivo: se actúa cuando la infestación ya es visible. No existen sistemas accesibles que detecten los factores de riesgo ambientales (humedad, temperatura, acumulación de residuos, fallas estructurales) antes de que el problema escale.
+El control de plagas en la industria alimentaria es reactivo: se actúa cuando la infestación ya es visible. Los sistemas tradicionales basados en sensores IoT son costosos, difíciles de mantener y no detectan directamente la presencia de fauna nociva.
 
 ## La solución
 
-Dashboard web que:
-- Consulta lecturas de sensores IoT (o simuladas) por zona del establecimiento
-- Calcula un **score de riesgo** usando un modelo predictivo entrenado con datos ambientales
-- Muestra **alertas automáticas** cuando el riesgo supera el umbral crítico
-- Permite al encargado intervenir de forma mínima y preventiva antes de que haya infestación
+Dashboard web con visión artificial que:
+- Analiza el feed de cámara de cada zona del establecimiento
+- Detecta visualmente **plagas, nivel de residuos, estado de limpieza y daños estructurales**
+- Calcula un **score de riesgo 0–100** a partir de las detecciones
+- Lanza **alertas automáticas** cuando el riesgo supera el umbral configurado
+- Permite registrar incidencias manualmente como respaldo
+- Funciona **offline** con datos simulados cuando el backend no está disponible
 
 ---
 
@@ -25,35 +27,33 @@ Dashboard web que:
 | Capa | Tecnología |
 |---|---|
 | Backend | Django + Django REST Framework |
-| Modelo predictivo | scikit-learn + pandas |
 | Base de datos | MySQL |
-| Comunicación | REST API (polling cada 5s) |
-| Frontend | Next.js + Recharts |
-| Simulación IoT | Script Python generador de datos |
+| Comunicación | REST API (polling cada 5 s) |
+| Frontend | Next.js + Tailwind CSS + Recharts |
+| Análisis visual | Cámara IP / RTSP + visión IA (demo con mock) |
 
 ---
 
 ## Arquitectura
 
 ```
-[Sensores / Simulador IoT]
+[Cámaras IP / Streams RTSP]
          |
          v
    [Django REST Backend]
-   - Recibe lecturas de sensores
-   - Ejecuta modelo ML
-   - Calcula score de riesgo
+   - Recibe snapshots / resultados de análisis
+   - Calcula score de riesgo por zona
    - Expone endpoints REST
          |
          v
-   [MySQL — histórico]
+   [MySQL — histórico + zonas]
          |
          v
    [Next.js Dashboard]  ←── polling cada 5s ──→  GET /api/dashboard/
-   - Zonas del establecimiento
-   - Gráficas de tendencia por sensor
-   - Panel de alertas
-   - Historial de lecturas
+   - Feed "EN VIVO" por zona
+   - Detecciones: plagas, residuos, limpieza, estructura
+   - Score de riesgo + tendencia temporal
+   - Panel de alertas + historial de reportes
 ```
 
 ---
@@ -62,38 +62,42 @@ Dashboard web que:
 
 ```
 Hackaton_Safe_Industry/
-├── backend/
+├── BACKEND/
 │   ├── manage.py
 │   ├── requirements.txt
-│   ├── safe_industry/       # Proyecto Django
-│   │   └── settings.py
-│   ├── monitor/             # App principal
-│   │   ├── models.py        # Zone, SensorReading, Alert
-│   │   ├── serializers.py
-│   │   ├── views.py         # Endpoints REST
-│   │   ├── urls.py
-│   │   └── ml/
-│   │       ├── train.py     # Entrenamiento del modelo
-│   │       └── predictor.py # Inferencia de riesgo
-│   └── simulator.py         # Generador de datos IoT
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   └── page.tsx     # Dashboard principal
-│   │   ├── components/
-│   │   │   ├── ZoneCard.tsx
-│   │   │   ├── RiskGauge.tsx
-│   │   │   ├── SensorCard.tsx
-│   │   │   ├── AlertPanel.tsx
-│   │   │   └── RiskChart.tsx
-│   │   ├── hooks/
-│   │   │   └── useDashboard.ts  # Polling REST API
-│   │   └── lib/
-│   │       ├── types.ts
-│   │       ├── mockData.ts
-│   │       └── utils.ts
-│   └── package.json
-└── README.md
+│   ├── core/                    # Configuración Django
+│   └── cocina/                  # App principal
+│       ├── models.py            # Zona, MetricasActuales, HistorialMetricas, Reporte
+│       ├── serializers.py
+│       ├── views.py             # Endpoints REST
+│       └── urls.py
+└── frontend/
+    └── src/
+        ├── app/
+        │   ├── page.tsx                      # Landing
+        │   └── dashboard/
+        │       ├── layout.tsx                # Sidebar + nav
+        │       ├── page.tsx                  # Vista general de zonas
+        │       ├── [zoneId]/page.tsx         # Detalle de zona
+        │       ├── alertas/page.tsx          # Historial de alertas
+        │       └── reportes/page.tsx         # Reportes registrados
+        ├── components/
+        │   ├── CameraCard.tsx               # Feed de cámara + detecciones + Re-analizar
+        │   ├── NewZoneDialog.tsx            # Modal para crear zona (tipo, URL cámara, umbrales)
+        │   ├── ZoneCard.tsx                 # Tarjeta resumen de zona
+        │   ├── ZoneSection.tsx              # Vista completa: gauge + cámara + gráfica
+        │   ├── ZoneSidebar.tsx              # Panel lateral: reportar + detalles de cámara
+        │   ├── AlertPanel.tsx               # Panel de alertas activas
+        │   ├── AppSidebar.tsx               # Sidebar de navegación
+        │   ├── RiskGauge.tsx                # Indicador semicircular de riesgo
+        │   └── RiskChart.tsx                # Gráfica de tendencia temporal
+        ├── hooks/
+        │   ├── useDashboard.ts              # Polling REST + fallback mock
+        │   └── useDismissedAlerts.ts        # Persistencia de alertas descartadas
+        └── lib/
+            ├── types.ts                     # Zone, CameraAnalysis, Alert, Report…
+            ├── mockData.ts                  # Datos simulados + zonas locales desde localStorage
+            └── utils.ts
 ```
 
 ---
@@ -104,21 +108,24 @@ Hackaton_Safe_Industry/
 |---|---|---|
 | `GET` | `/api/dashboard/` | Zonas, alertas e historial completo |
 | `GET` | `/api/zones/` | Lista de zonas |
+| `POST` | `/api/zones/` | Crear zona nueva |
 | `GET` | `/api/zones/<id>/` | Detalle de una zona |
-| `POST` | `/api/sensors/` | Recibir lectura de sensor |
+| `POST` | `/api/reports/` | Registrar reporte de incidencia |
 | `GET` | `/api/alerts/` | Alertas activas |
 
 ---
 
-## Variables monitoreadas
+## Detecciones de cámara
 
-| Sensor | Umbral de riesgo |
-|---|---|
-| Humedad relativa | > 70% |
-| Temperatura | > 28°C en zonas de almacenamiento |
-| Nivel de residuos | > 60% de capacidad |
-| Tiempo sin limpieza | > 4 horas |
-| Integridad estructural | Sellos dañados detectados |
+| Campo | Descripción | Umbral de alerta (default) |
+|---|---|---|
+| `pestsDetected` | Plaga visible (insecto / roedor) | Cualquier detección |
+| `wasteLevel` | Nivel de residuos (%) | > 60% |
+| `cleanlinessScore` | Puntuación de limpieza (%) | < 50% |
+| `structuralIssues` | Daño estructural visible | Cualquier detección |
+| `confidence` | Confianza del análisis IA (%) | — |
+
+Los umbrales de `wasteLevel` y `cleanlinessScore` son configurables por zona al crearla.
 
 ---
 
@@ -126,16 +133,10 @@ Hackaton_Safe_Industry/
 
 ### Backend
 ```bash
-cd backend
+cd BACKEND
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
-```
-
-### Simulador IoT
-```bash
-cd backend
-python simulator.py
 ```
 
 ### Frontend
@@ -146,7 +147,7 @@ npm run dev
 ```
 
 El frontend corre en `http://localhost:3000` y consulta el backend en `http://localhost:8000`.  
-Si el backend no está disponible, el dashboard usa datos simulados automáticamente.
+Si el backend no está disponible, el dashboard usa datos simulados automáticamente (incluyendo zonas creadas localmente en `localStorage`).
 
 ---
 
@@ -161,4 +162,4 @@ Si el backend no está disponible, el dashboard usa datos simulados automáticam
 
 ---
 
-*Hackathon Safe Industry 2026*
+*PlagueTracker · Hackathon Safe Industry 2026*
