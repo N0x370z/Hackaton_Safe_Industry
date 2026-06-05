@@ -37,3 +37,18 @@ export interface DashboardData {
   alerts: Alert[]
   history: HistoryPoint[]
 }
+
+export type ReportType =
+  | 'insecto_avistado'
+  | 'roedor_avistado'
+  | 'residuos_acumulados'
+  | 'dano_estructural'
+  | 'mal_olor'
+  | 'otro'
+
+export interface ReportPayload {
+  zoneId: string
+  zoneName: string
+  type: ReportType
+  description: string
+}
