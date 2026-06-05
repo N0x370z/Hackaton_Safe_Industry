@@ -33,6 +33,8 @@ const TARGET_SCORES: Record<string, number> = {
   low: 15,
 }
 
+const LS_KEY = 'safe_industry_reports'
+
 type Status = 'idle' | 'loading' | 'success' | 'error'
 
 function computeTrend(history: { riskScore: number }[]) {
@@ -44,6 +46,14 @@ function computeTrend(history: { riskScore: number }[]) {
   if (delta > 5) return 'empeorando'
   if (delta < -5) return 'mejorando'
   return 'estable'
+}
+
+function saveToLocalStorage(payload: ReportPayload) {
+  try {
+    const existing = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+    existing.unshift({ ...payload, timestamp: new Date().toISOString(), id: crypto.randomUUID() })
+    localStorage.setItem(LS_KEY, JSON.stringify(existing.slice(0, 100)))
+  } catch {}
 }
 
 interface ZoneSectionProps {
@@ -62,6 +72,10 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
     e.preventDefault()
     setStatus('loading')
     const payload: ReportPayload = { zoneId: zone.id, zoneName: zone.name, type, description }
+
+    // Siempre guarda en localStorage
+    saveToLocalStorage(payload)
+
     try {
       const res = await fetch(`${API_URL}/api/reports/`, {
         method: 'POST',
@@ -73,8 +87,10 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
       setDescription('')
       setTimeout(() => setStatus('idle'), 2500)
     } catch {
-      setStatus('error')
-      setTimeout(() => setStatus('idle'), 2000)
+      // Backend no disponible — igual muestra éxito porque se guardó en localStorage
+      setStatus('success')
+      setDescription('')
+      setTimeout(() => setStatus('idle'), 2500)
     }
   }
 

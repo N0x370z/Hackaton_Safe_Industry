@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import ZonaDashboardView
+from .views import DashboardView, ZonaListView, ZonaDetailView, TelemetriaView, ReporteView
 
 urlpatterns = [
-    # Ruta para el dashboard de una zona específica (GET)
-    # Y para recibir la simulación/telemetría de esa zona (POST)
-    path('zonas/<int:pk>/dashboard/', ZonaDashboardView.as_view(), name='zona-dashboard'),
-    path('zonas/<int:pk>/telemetria/', ZonaDashboardView.as_view(), name='zona-telemetria'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('zones/', ZonaListView.as_view(), name='zona-list'),
+    path('zones/<int:pk>/', ZonaDetailView.as_view(), name='zona-detail'),
+    path('zones/<int:pk>/telemetria/', TelemetriaView.as_view(), name='zona-telemetria'),
+    path('reports/', ReporteView.as_view(), name='reportes'),
 ]

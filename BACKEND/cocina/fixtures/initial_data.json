@@ -1,0 +1,111 @@
+[
+  {
+    "model": "cocina.establecimiento",
+    "pk": 1,
+    "fields": {
+      "nombre": "Restaurante SafeIndustry Demo",
+      "direccion": "Av. Reforma 123, CDMX",
+      "creado_en": "2026-06-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "cocina.zona",
+    "pk": 1,
+    "fields": {
+      "establecimiento": 1,
+      "nombre": "Cocina Principal",
+      "temperatura_max_ideal": 24.0,
+      "humedad_max_ideal": 60.0,
+      "tiempo_limpieza_max_horas": 4
+    }
+  },
+  {
+    "model": "cocina.zona",
+    "pk": 2,
+    "fields": {
+      "establecimiento": 1,
+      "nombre": "Almacén Frío",
+      "temperatura_max_ideal": 6.0,
+      "humedad_max_ideal": 65.0,
+      "tiempo_limpieza_max_horas": 8
+    }
+  },
+  {
+    "model": "cocina.zona",
+    "pk": 3,
+    "fields": {
+      "establecimiento": 1,
+      "nombre": "Área de Carga",
+      "temperatura_max_ideal": 26.0,
+      "humedad_max_ideal": 60.0,
+      "tiempo_limpieza_max_horas": 4
+    }
+  },
+  {
+    "model": "cocina.zona",
+    "pk": 4,
+    "fields": {
+      "establecimiento": 1,
+      "nombre": "Bodega Seca",
+      "temperatura_max_ideal": 24.0,
+      "humedad_max_ideal": 60.0,
+      "tiempo_limpieza_max_horas": 4
+    }
+  },
+  {
+    "model": "cocina.metricasactuales",
+    "pk": 1,
+    "fields": {
+      "zona": 1,
+      "humedad": 74.0,
+      "temperatura": 29.0,
+      "residuos": 65.0,
+      "ultima_limpieza": "2026-06-05T09:00:00Z",
+      "integridad_estructural": "OK",
+      "score_riesgo": 78,
+      "actualizado_en": "2026-06-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "cocina.metricasactuales",
+    "pk": 2,
+    "fields": {
+      "zona": 2,
+      "humedad": 55.0,
+      "temperatura": 4.0,
+      "residuos": 20.0,
+      "ultima_limpieza": "2026-06-05T11:00:00Z",
+      "integridad_estructural": "OK",
+      "score_riesgo": 18,
+      "actualizado_en": "2026-06-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "cocina.metricasactuales",
+    "pk": 3,
+    "fields": {
+      "zona": 3,
+      "humedad": 68.0,
+      "temperatura": 27.0,
+      "residuos": 80.0,
+      "ultima_limpieza": "2026-06-05T06:00:00Z",
+      "integridad_estructural": "DAÑADO",
+      "score_riesgo": 91,
+      "actualizado_en": "2026-06-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "cocina.metricasactuales",
+    "pk": 4,
+    "fields": {
+      "zona": 4,
+      "humedad": 62.0,
+      "temperatura": 24.0,
+      "residuos": 45.0,
+      "ultima_limpieza": "2026-06-05T10:00:00Z",
+      "integridad_estructural": "OK",
+      "score_riesgo": 42,
+      "actualizado_en": "2026-06-05T12:00:00Z"
+    }
+  }
+]

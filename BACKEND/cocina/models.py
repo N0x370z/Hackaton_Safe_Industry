@@ -49,3 +49,25 @@ class HistorialMetricas(models.Model):
 
     class Meta:
         ordering = ['-capturado_en']
+
+
+class Reporte(models.Model):
+    TIPOS = [
+        ('insecto_avistado', 'Insecto avistado'),
+        ('roedor_avistado', 'Roedor avistado'),
+        ('residuos_acumulados', 'Residuos acumulados'),
+        ('dano_estructural', 'Daño estructural'),
+        ('mal_olor', 'Mal olor'),
+        ('otro', 'Otro'),
+    ]
+    zona = models.ForeignKey(Zona, on_delete=models.SET_NULL, null=True, blank=True, related_name='reportes')
+    zona_nombre = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=30, choices=TIPOS)
+    descripcion = models.TextField(blank=True)
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-creado_en']
+
+    def __str__(self):
+        return f"{self.tipo} — {self.zona_nombre}"
