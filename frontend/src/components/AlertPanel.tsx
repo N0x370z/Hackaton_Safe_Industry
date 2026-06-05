@@ -14,7 +14,7 @@ export function AlertPanel({ alerts }: AlertPanelProps) {
   const { dismissed, dismiss, restore } = useDismissedAlerts()
 
   const visible = alerts.filter((a) => !dismissed.has(a.id))
-  const dismissedCount = alerts.filter((a) => dismissed.has(a.id)).size ?? dismissed.size
+  const dismissedCount = alerts.filter((a) => dismissed.has(a.id)).length
 
   if (visible.length === 0) {
     return (
