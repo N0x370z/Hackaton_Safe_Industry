@@ -6,7 +6,7 @@ import { Zone } from '@/lib/types'
 import { getRiskBg, getRiskLabel, formatTime } from '@/lib/utils'
 import { RiskGauge } from './RiskGauge'
 import { SensorCard } from './SensorCard'
-import { ReportModal } from './ReportModal'
+import { ZoneSidebar } from './ZoneSidebar'
 
 interface ZoneCardProps {
   zone: Zone
@@ -15,7 +15,7 @@ interface ZoneCardProps {
 }
 
 export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
-  const [showReport, setShowReport] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
 
   return (
     <>
@@ -32,18 +32,9 @@ export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
             <h3 className="text-sm font-semibold text-white">{zone.name}</h3>
             <p className="text-[10px] text-slate-500 mt-0.5">Actualizado: {formatTime(zone.lastUpdated)}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRiskBg(zone.riskLevel)}`}>
-              {getRiskLabel(zone.riskLevel)}
-            </span>
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowReport(true) }}
-              className="p-1.5 rounded-lg border border-slate-600 bg-slate-700/60 text-slate-400 hover:text-white hover:border-orange-500/60 hover:bg-orange-500/10 transition-all"
-              title="Añadir reporte"
-            >
-              <ClipboardList size={13} />
-            </button>
-          </div>
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRiskBg(zone.riskLevel)}`}>
+            {getRiskLabel(zone.riskLevel)}
+          </span>
         </div>
 
         <div className="flex items-center gap-4 mb-4">
@@ -64,14 +55,19 @@ export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
         </div>
 
         <SensorCard sensors={zone.sensors} />
+
+        {/* Botón principal — ancho completo, no puede perderse */}
+        <button
+          onClick={(e) => { e.stopPropagation(); setShowSidebar(true) }}
+          className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 hover:text-orange-200 font-semibold text-sm py-2.5 transition-all"
+        >
+          <ClipboardList size={15} />
+          Reportar / Ver detalles
+        </button>
       </div>
 
-      {showReport && (
-        <ReportModal
-          zoneId={zone.id}
-          zoneName={zone.name}
-          onClose={() => setShowReport(false)}
-        />
+      {showSidebar && (
+        <ZoneSidebar zone={zone} onClose={() => setShowSidebar(false)} />
       )}
     </>
   )
