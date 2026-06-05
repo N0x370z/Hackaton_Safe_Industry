@@ -1,5 +1,16 @@
 import { DashboardData } from './types'
 
+function generateHistory(baseScore: number, points = 12) {
+  const now = new Date()
+  return Array.from({ length: points }, (_, i) => ({
+    time: new Date(now.getTime() - (points - 1 - i) * 5 * 60000).toLocaleTimeString('es-MX', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    riskScore: Math.max(0, Math.min(100, Math.floor(baseScore + (Math.random() - 0.5) * 20))),
+  }))
+}
+
 export function generateMockData(): DashboardData {
   const now = new Date()
 
@@ -12,6 +23,7 @@ export function generateMockData(): DashboardData {
         riskScore: 78,
         riskLevel: 'high',
         lastUpdated: now.toISOString(),
+        history: generateHistory(78),
       },
       {
         id: 'z2',
@@ -20,6 +32,7 @@ export function generateMockData(): DashboardData {
         riskScore: 18,
         riskLevel: 'low',
         lastUpdated: now.toISOString(),
+        history: generateHistory(18),
       },
       {
         id: 'z3',
@@ -28,6 +41,7 @@ export function generateMockData(): DashboardData {
         riskScore: 91,
         riskLevel: 'critical',
         lastUpdated: now.toISOString(),
+        history: generateHistory(91),
       },
       {
         id: 'z4',
@@ -36,6 +50,7 @@ export function generateMockData(): DashboardData {
         riskScore: 42,
         riskLevel: 'medium',
         lastUpdated: now.toISOString(),
+        history: generateHistory(42),
       },
     ],
     alerts: [
@@ -56,10 +71,5 @@ export function generateMockData(): DashboardData {
         timestamp: new Date(now.getTime() - 12 * 60000).toISOString(),
       },
     ],
-    history: Array.from({ length: 12 }, (_, i) => ({
-      time: new Date(now.getTime() - (11 - i) * 5 * 60000).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
-      riskScore: Math.floor(40 + Math.random() * 50),
-      zone: 'Área de Carga',
-    })),
   }
 }

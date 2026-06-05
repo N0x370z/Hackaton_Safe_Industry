@@ -3,14 +3,13 @@
 import { useState } from 'react'
 import { useDashboard } from '@/hooks/useDashboard'
 import { AppSidebar } from '@/components/AppSidebar'
-import { ZoneCard } from '@/components/ZoneCard'
+import { ZoneSection } from '@/components/ZoneSection'
 import { AlertPanel } from '@/components/AlertPanel'
-import { RiskChart } from '@/components/RiskChart'
 
 type NavSection = 'dashboard' | 'alertas' | 'reporte'
 
 export default function Dashboard() {
-  const { data, connected, selectedZone, setSelectedZone } = useDashboard()
+  const { data, connected } = useDashboard()
   const [activeSection, setActiveSection] = useState<NavSection>('dashboard')
 
   const criticalCount = data.zones.filter((z) => z.riskLevel === 'critical').length
@@ -29,9 +28,10 @@ export default function Dashboard() {
 
       {/* Contenido principal */}
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
+        <div className="p-6 flex flex-col gap-6">
+
           {/* KPIs */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-4">
             <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-center">
               <p className="text-2xl font-bold text-white">{avgRisk}</p>
               <p className="text-xs text-slate-400 mt-1">Riesgo promedio</p>
@@ -46,35 +46,22 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Zonas */}
-            <div className="lg:col-span-2">
-              <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Zonas del establecimiento</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {data.zones.map((zone) => (
-                  <ZoneCard
-                    key={zone.id}
-                    zone={zone}
-                    selected={selectedZone?.id === zone.id}
-                    onClick={() => setSelectedZone(zone.id === selectedZone?.id ? null : zone)}
-                  />
-                ))}
-              </div>
+          {/* Alertas */}
+          {data.alerts.length > 0 && (
+            <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
+              <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Alertas activas</h2>
+              <AlertPanel alerts={data.alerts} />
             </div>
+          )}
 
-            {/* Panel derecho */}
-            <div className="flex flex-col gap-6">
-              <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-                <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Alertas activas</h2>
-                <AlertPanel alerts={data.alerts} />
-              </div>
-              <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-                <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Tendencia de riesgo</h2>
-                <p className="text-xs text-slate-500 mb-3">Zona de mayor riesgo — últimos 60 min</p>
-                <RiskChart data={data.history} />
-              </div>
-            </div>
+          {/* Zonas — cada una independiente */}
+          <div className="flex flex-col gap-4">
+            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Zonas del establecimiento</h2>
+            {data.zones.map((zone) => (
+              <ZoneSection key={zone.id} zone={zone} />
+            ))}
           </div>
+
         </div>
       </div>
     </div>
