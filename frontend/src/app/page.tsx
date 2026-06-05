@@ -1,69 +1,57 @@
-'use client'
+import Link from 'next/link'
+import { Shield, Activity, Bell, ClipboardList, ArrowRight } from 'lucide-react'
 
-import { useState } from 'react'
-import { useDashboard } from '@/hooks/useDashboard'
-import { AppSidebar } from '@/components/AppSidebar'
-import { ZoneSection } from '@/components/ZoneSection'
-import { AlertPanel } from '@/components/AlertPanel'
-
-type NavSection = 'dashboard' | 'alertas' | 'reporte'
-
-export default function Dashboard() {
-  const { data, connected } = useDashboard()
-  const [activeSection, setActiveSection] = useState<NavSection>('dashboard')
-
-  const criticalCount = data.zones.filter((z) => z.riskLevel === 'critical').length
-  const avgRisk = Math.round(data.zones.reduce((a, z) => a + z.riskScore, 0) / data.zones.length)
-
+export default function Landing() {
   return (
-    <div className="flex h-screen bg-slate-900 text-white overflow-hidden">
-      {/* Sidebar fija */}
-      <AppSidebar
-        zones={data.zones}
-        alertCount={data.alerts.length}
-        connected={connected}
-        activeSection={activeSection}
-        onNavChange={setActiveSection}
-      />
-
-      {/* Contenido principal */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 flex flex-col gap-6">
-
-          {/* KPIs */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-center">
-              <p className="text-2xl font-bold text-white">{avgRisk}</p>
-              <p className="text-xs text-slate-400 mt-1">Riesgo promedio</p>
-            </div>
-            <div className={`rounded-xl border p-4 text-center ${criticalCount > 0 ? 'border-red-500/40 bg-red-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
-              <p className={`text-2xl font-bold ${criticalCount > 0 ? 'text-red-400' : 'text-white'}`}>{criticalCount}</p>
-              <p className="text-xs text-slate-400 mt-1">Zonas críticas</p>
-            </div>
-            <div className={`rounded-xl border p-4 text-center ${data.alerts.length > 0 ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
-              <p className={`text-2xl font-bold ${data.alerts.length > 0 ? 'text-yellow-400' : 'text-white'}`}>{data.alerts.length}</p>
-              <p className="text-xs text-slate-400 mt-1">Alertas activas</p>
-            </div>
-          </div>
-
-          {/* Alertas */}
-          {data.alerts.length > 0 && (
-            <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-              <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">Alertas activas</h2>
-              <AlertPanel alerts={data.alerts} />
-            </div>
-          )}
-
-          {/* Zonas — cada una independiente */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Zonas del establecimiento</h2>
-            {data.zones.map((zone) => (
-              <ZoneSection key={zone.id} zone={zone} />
-            ))}
-          </div>
-
+    <div className="min-h-screen bg-slate-900 text-white flex flex-col">
+      {/* Header */}
+      <header className="border-b border-slate-700/60 px-6 h-14 flex items-center">
+        <div className="flex items-center gap-2">
+          <Shield size={20} className="text-orange-400" />
+          <span className="font-bold text-white">SafeIndustry</span>
         </div>
-      </div>
+      </header>
+
+      {/* Hero */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 text-center gap-8">
+        <div className="flex flex-col items-center gap-4 max-w-xl">
+          <div className="w-16 h-16 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center">
+            <Shield size={32} className="text-orange-400" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight">
+            SafeIndustry
+          </h1>
+          <p className="text-slate-400 text-lg leading-relaxed">
+            Sistema de detección temprana y gestión predictiva de fauna nociva para la industria alimentaria.
+          </p>
+        </div>
+
+        {/* Features */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+          {[
+            { icon: <Activity size={18} />, title: 'Monitoreo en tiempo real', desc: 'Sensores por zona del establecimiento' },
+            { icon: <Bell size={18} />, title: 'Alertas predictivas', desc: 'Detecta riesgos antes de que escalen' },
+            { icon: <ClipboardList size={18} />, title: 'Reporte de incidencias', desc: 'Documenta lo que observas en campo' },
+          ].map((f) => (
+            <div key={f.title} className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 text-left flex flex-col gap-2">
+              <span className="text-orange-400">{f.icon}</span>
+              <p className="text-sm font-semibold text-white">{f.title}</p>
+              <p className="text-xs text-slate-400">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-400 font-bold text-white transition-colors text-sm"
+        >
+          Ir al Dashboard <ArrowRight size={16} />
+        </Link>
+      </main>
+
+      <footer className="text-center text-xs text-slate-600 py-4">
+        Hackathon Safe Industry 2026
+      </footer>
     </div>
   )
 }

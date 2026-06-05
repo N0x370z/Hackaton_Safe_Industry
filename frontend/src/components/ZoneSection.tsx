@@ -20,9 +20,9 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
   return (
     <>
       <div className="rounded-2xl border border-slate-700/60 bg-slate-800/40 overflow-hidden">
-        {/* Header de zona */}
+        {/* Header */}
         <div
-          className="flex items-center justify-between px-5 py-3 border-b border-slate-700/40"
+          className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-slate-700/40"
           style={{ borderLeftWidth: 4, borderLeftColor: color, borderLeftStyle: 'solid' }}
         >
           <div className="flex items-center gap-3">
@@ -37,15 +37,15 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
 
           <button
             onClick={() => setShowSidebar(true)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-xs font-semibold transition-all"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-xs font-semibold transition-all"
           >
             <ClipboardList size={13} />
             Reportar / Detalles
           </button>
         </div>
 
-        {/* Cuerpo — gauge + sensores + gráfica */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-slate-700/40">
+        {/* Cuerpo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700/40">
           {/* Gauge */}
           <div className="flex flex-col items-center justify-center p-5 gap-2">
             <RiskGauge score={zone.riskScore} level={zone.riskLevel} size={130} />
@@ -53,15 +53,15 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
           </div>
 
           {/* Sensores */}
-          <div className="p-5">
+          <div className="p-4 sm:p-5">
             <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-3">Sensores</p>
             <SensorCard sensors={zone.sensors} />
           </div>
 
-          {/* Gráfica propia de la zona */}
-          <div className="p-5">
+          {/* Gráfica */}
+          <div className="p-4 sm:p-5">
             <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-3">Tendencia — últimos 60 min</p>
-            <ResponsiveContainer width="100%" height={140}>
+            <ResponsiveContainer width="100%" height={150}>
               <LineChart data={zone.history} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
                 <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 9 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
@@ -74,14 +74,7 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
                 />
                 <ReferenceLine y={70} stroke="#f97316" strokeDasharray="3 3" strokeOpacity={0.4} />
                 <ReferenceLine y={90} stroke="#ef4444" strokeDasharray="3 3" strokeOpacity={0.4} />
-                <Line
-                  type="monotone"
-                  dataKey="riskScore"
-                  stroke={color}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 3, fill: color }}
-                />
+                <Line type="monotone" dataKey="riskScore" stroke={color} strokeWidth={2} dot={false} activeDot={{ r: 3, fill: color }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
