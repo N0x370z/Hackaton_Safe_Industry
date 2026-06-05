@@ -2,7 +2,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import Zona, Reporte
+from django.utils import timezone
+from .models import Establecimiento, Zona, MetricasActuales, Reporte
 from .serializers import (
     ZonaDashboardSerializer,
     TelemetriaInputSerializer,
@@ -63,6 +64,33 @@ class ZonaListView(APIView):
     def get(self, request):
         zonas = Zona.objects.all()
         return Response(ZonaDashboardSerializer(zonas, many=True).data)
+
+    def post(self, request):
+        nombre = request.data.get('nombre', '').strip()
+        if not nombre:
+            return Response({'error': 'El campo nombre es obligatorio.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        establecimiento = Establecimiento.objects.first()
+        if not establecimiento:
+            return Response({'error': 'No existe ningún establecimiento.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        zona = Zona.objects.create(
+            establecimiento=establecimiento,
+            nombre=nombre,
+            temperatura_max_ideal=float(request.data.get('temperatura_max_ideal', 25.0)),
+            humedad_max_ideal=float(request.data.get('humedad_max_ideal', 60.0)),
+            tiempo_limpieza_max_horas=int(request.data.get('tiempo_limpieza_max_horas', 4)),
+        )
+        MetricasActuales.objects.create(
+            zona=zona,
+            humedad=50.0,
+            temperatura=22.0,
+            residuos=10.0,
+            ultima_limpieza=timezone.now(),
+            integridad_estructural='OK',
+            score_riesgo=0,
+        )
+        return Response(ZonaDashboardSerializer(zona).data, status=status.HTTP_201_CREATED)
 
 
 class ZonaDetailView(APIView):
