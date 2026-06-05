@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList, Camera } from 'lucide-react'
+import { ClipboardList, Camera, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { Zone } from '@/lib/types'
 import { getRiskBg, getRiskLabel, formatTime } from '@/lib/utils'
 import { RiskGauge } from './RiskGauge'
 import { ZoneSidebar } from './ZoneSidebar'
+import { EditZoneDialog } from './EditZoneDialog'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const LS_KEY = 'plague_tracker_local_zones'
 
 interface ZoneCardProps {
   zone: Zone
@@ -15,6 +19,24 @@ interface ZoneCardProps {
 
 export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
   const [showSidebar, setShowSidebar] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [hidden, setHidden] = useState(false)
+
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (zone.id.startsWith('local-')) {
+      try {
+        const existing = JSON.parse(localStorage.getItem(LS_KEY) || '[]')
+        localStorage.setItem(LS_KEY, JSON.stringify(existing.filter((z: { id: string }) => z.id !== zone.id)))
+      } catch {}
+    } else {
+      try { await fetch(`${API_URL}/api/zones/${zone.id}/`, { method: 'DELETE' }) } catch {}
+    }
+    setHidden(true)
+  }
+
+  if (hidden) return null
 
   return (
     <>
@@ -26,15 +48,54 @@ export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
             : 'border-slate-700/60 bg-slate-800/40 hover:border-slate-600 hover:bg-slate-800/80'
         }`}
       >
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h3 className="text-sm font-semibold text-white">{zone.name}</h3>
+        <div className="flex items-start justify-between mb-3 gap-2">
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-white truncate">{zone.name}</h3>
             <p className="text-[10px] text-slate-500 mt-0.5">Actualizado: {formatTime(zone.lastUpdated)}</p>
           </div>
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRiskBg(zone.riskLevel)}`}>
-            {getRiskLabel(zone.riskLevel)}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRiskBg(zone.riskLevel)}`}>
+              {getRiskLabel(zone.riskLevel)}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowEdit(true) }}
+              className="p-1 rounded-lg text-slate-500 hover:text-white hover:bg-slate-700 transition-colors"
+              title="Editar zona"
+            >
+              <Pencil size={12} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+              className="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Eliminar zona"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
         </div>
+
+        {/* Confirmación inline de eliminación */}
+        {confirmDelete && (
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="mb-3 flex items-center gap-2 p-2.5 rounded-xl border border-red-500/30 bg-red-500/10"
+          >
+            <AlertTriangle size={13} className="text-red-400 shrink-0" />
+            <span className="text-xs text-red-300 flex-1">¿Eliminar esta zona?</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
+              className="text-[11px] px-2 py-0.5 rounded border border-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDelete}
+              className="text-[11px] px-2 py-0.5 rounded bg-red-500/30 border border-red-500/50 text-red-300 hover:bg-red-500/50 transition-colors"
+            >
+              Eliminar
+            </button>
+          </div>
+        )}
 
         <div className="flex items-center gap-4 mb-4">
           <RiskGauge score={zone.riskScore} level={zone.riskLevel} size={100} />
@@ -84,9 +145,8 @@ export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
         </button>
       </div>
 
-      {showSidebar && (
-        <ZoneSidebar zone={zone} onClose={() => setShowSidebar(false)} />
-      )}
+      {showSidebar && <ZoneSidebar zone={zone} onClose={() => setShowSidebar(false)} />}
+      {showEdit && <EditZoneDialog zone={zone} onClose={() => setShowEdit(false)} />}
     </>
   )
 }

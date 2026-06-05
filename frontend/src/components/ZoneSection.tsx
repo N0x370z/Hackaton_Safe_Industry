@@ -1,14 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Send, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, TrendingUp, TrendingDown, Minus, Target, Lightbulb } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Send, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, TrendingUp, TrendingDown, Minus, Target, Lightbulb, Pencil, AlertTriangle } from 'lucide-react'
 import { Zone, ReportType, ReportPayload } from '@/lib/types'
 import { getRiskBg, getRiskLabel, getRiskColor, formatTime } from '@/lib/utils'
 import { RiskGauge } from './RiskGauge'
 import { CameraCard } from './CameraCard'
+import { EditZoneDialog } from './EditZoneDialog'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const LS_ZONES_KEY = 'plague_tracker_local_zones'
+
+async function deleteZone(zoneId: string) {
+  if (zoneId.startsWith('local-')) {
+    try {
+      const existing = JSON.parse(localStorage.getItem(LS_ZONES_KEY) || '[]')
+      localStorage.setItem(LS_ZONES_KEY, JSON.stringify(existing.filter((z: { id: string }) => z.id !== zoneId)))
+    } catch {}
+    return
+  }
+  try {
+    await fetch(`${API_URL}/api/zones/${zoneId}/`, { method: 'DELETE' })
+  } catch {}
+}
 
 const REPORT_TYPES: { value: ReportType; label: string; icon: React.ReactNode }[] = [
   { value: 'insecto_avistado', label: 'Insecto avistado', icon: <Bug size={12} /> },
@@ -61,12 +77,22 @@ interface ZoneSectionProps {
 }
 
 export function ZoneSection({ zone }: ZoneSectionProps) {
+  const router = useRouter()
   const [type, setType] = useState<ReportType>('insecto_avistado')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [trend, setTrend] = useState('estable')
+  const [showEdit, setShowEdit] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const color = getRiskColor(zone.riskLevel)
   const target = TARGET_SCORES[zone.riskLevel]
+
+  async function handleDelete() {
+    setDeleting(true)
+    await deleteZone(zone.id)
+    router.push('/dashboard')
+  }
 
   useEffect(() => {
     setTrend(computeTrend(zone.history))
@@ -105,14 +131,53 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
         className="flex flex-wrap items-center gap-3 px-4 sm:px-5 py-3 border-b border-slate-700/40"
         style={{ borderLeftWidth: 4, borderLeftColor: color, borderLeftStyle: 'solid' }}
       >
-        <div>
+        <div className="flex-1 min-w-0">
           <h3 className="text-sm font-bold text-white">{zone.name}</h3>
           <p className="text-[10px] text-slate-500">Última lectura: {formatTime(zone.lastUpdated)}</p>
         </div>
         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getRiskBg(zone.riskLevel)}`}>
           {getRiskLabel(zone.riskLevel)}
         </span>
+
+        {/* Acciones */}
+        {confirmDelete ? (
+          <div className="flex items-center gap-2 ml-auto">
+            <span className="text-xs text-red-400 flex items-center gap-1"><AlertTriangle size={12} /> ¿Eliminar zona?</span>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="text-xs px-2.5 py-1 rounded-lg border border-slate-600 text-slate-400 hover:text-white transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs px-2.5 py-1 rounded-lg bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30 disabled:opacity-50 transition-colors"
+            >
+              {deleting ? 'Eliminando…' : 'Confirmar'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              onClick={() => setShowEdit(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-600 text-xs font-medium transition-colors"
+              title="Editar zona"
+            >
+              <Pencil size={12} /> Editar
+            </button>
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-500/40 text-xs font-medium transition-colors"
+              title="Eliminar zona"
+            >
+              <Trash2 size={12} /> Eliminar
+            </button>
+          </div>
+        )}
       </div>
+
+      {showEdit && <EditZoneDialog zone={zone} onClose={() => setShowEdit(false)} />}
 
       {/* Cuerpo — gauge + sensores + gráfica */}
       <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700/40">
