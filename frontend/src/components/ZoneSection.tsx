@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Send, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, TrendingUp, TrendingDown, Minus, Target, Lightbulb } from 'lucide-react'
 import { Zone, ReportType, ReportPayload } from '@/lib/types'
 import { getRiskBg, getRiskLabel, getRiskColor, formatTime } from '@/lib/utils'
@@ -64,9 +64,13 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
   const [type, setType] = useState<ReportType>('insecto_avistado')
   const [description, setDescription] = useState('')
   const [status, setStatus] = useState<Status>('idle')
+  const [trend, setTrend] = useState('estable')
   const color = getRiskColor(zone.riskLevel)
-  const trend = computeTrend(zone.history)
   const target = TARGET_SCORES[zone.riskLevel]
+
+  useEffect(() => {
+    setTrend(computeTrend(zone.history))
+  }, [zone.history])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
