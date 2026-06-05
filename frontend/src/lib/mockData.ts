@@ -16,14 +16,14 @@ const LS_LOCAL_ZONES = 'plague_tracker_local_zones'
 function getLocalZones(): Zone[] {
   if (typeof window === 'undefined') return []
   try {
-    const raw: { id: string; nombre: string; createdAt: string }[] = JSON.parse(
+    const raw: { id: string; nombre: string; imageUrl?: string; createdAt: string }[] = JSON.parse(
       localStorage.getItem(LS_LOCAL_ZONES) || '[]'
     )
     return raw.map((z) => ({
       id: z.id,
       name: z.nombre,
       camera: {
-        imageUrl: '',
+        imageUrl: z.imageUrl ?? '',
         analyzed: false,
         lastAnalyzed: null,
         pestsDetected: false,
@@ -52,7 +52,7 @@ export function generateMockData(): DashboardData {
         id: 'z1',
         name: 'Cocina Principal',
         camera: {
-          imageUrl: 'https://picsum.photos/seed/kitchen1/400/225',
+          imageUrl: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&h=225&fit=crop',
           analyzed: true,
           lastAnalyzed: new Date(now.getTime() - 8 * 60000).toISOString(),
           pestsDetected: false,
@@ -71,7 +71,7 @@ export function generateMockData(): DashboardData {
         id: 'z2',
         name: 'Almacén Frío',
         camera: {
-          imageUrl: 'https://picsum.photos/seed/coldroom2/400/225',
+          imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=225&fit=crop',
           analyzed: true,
           lastAnalyzed: new Date(now.getTime() - 3 * 60000).toISOString(),
           pestsDetected: false,
@@ -90,7 +90,7 @@ export function generateMockData(): DashboardData {
         id: 'z3',
         name: 'Área de Carga',
         camera: {
-          imageUrl: 'https://picsum.photos/seed/warehouse3/400/225',
+          imageUrl: 'https://images.unsplash.com/photo-1553413077-190dd305871c?w=400&h=225&fit=crop',
           analyzed: true,
           lastAnalyzed: new Date(now.getTime() - 5 * 60000).toISOString(),
           pestsDetected: true,
@@ -109,7 +109,7 @@ export function generateMockData(): DashboardData {
         id: 'z4',
         name: 'Bodega Seca',
         camera: {
-          imageUrl: 'https://picsum.photos/seed/storage4/400/225',
+          imageUrl: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=400&h=225&fit=crop',
           analyzed: true,
           lastAnalyzed: new Date(now.getTime() - 15 * 60000).toISOString(),
           pestsDetected: false,
