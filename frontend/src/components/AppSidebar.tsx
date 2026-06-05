@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Shield, LayoutDashboard, Bell, ClipboardList, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, Send, Wifi, WifiOff, ChevronDown } from 'lucide-react'
+import { Bug, LayoutDashboard, Bell, ClipboardList, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, Send, Wifi, WifiOff, ChevronDown } from 'lucide-react'
 import { Zone, ReportType, ReportPayload } from '@/lib/types'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -65,8 +65,8 @@ export function AppSidebar({ zones, alertCount, connected, activeSection, onNavC
     <aside className="w-64 shrink-0 h-screen sticky top-0 flex flex-col border-r border-slate-700/60 bg-slate-900 overflow-y-auto">
       {/* Brand */}
       <div className="flex items-center gap-2 px-5 h-14 border-b border-slate-700/60 shrink-0">
-        <Shield size={18} className="text-orange-400" />
-        <span className="font-bold text-white">SafeIndustry</span>
+        <Bug size={18} className="text-orange-400" />
+        <span className="font-bold text-white">PlagueTracker</span>
       </div>
 
       <div className="flex flex-col gap-6 p-4 flex-1">

@@ -74,10 +74,10 @@ export default function DashboardPage() {
 
                   <div className="grid grid-cols-2 gap-x-3 gap-y-1">
                     {[
-                      { label: 'Humedad', value: `${zone.sensors.humidity}%`, warn: zone.sensors.humidity > 70 },
-                      { label: 'Temperatura', value: `${zone.sensors.temperature}°C`, warn: zone.sensors.temperature > 28 },
-                      { label: 'Residuos', value: `${zone.sensors.wasteLevel}%`, warn: zone.sensors.wasteLevel > 60 },
-                      { label: 'Sin limpiar', value: `${zone.sensors.timeSinceClean}h`, warn: zone.sensors.timeSinceClean > 4 },
+                      { label: 'Residuos', value: `${zone.camera.wasteLevel}%`, warn: zone.camera.wasteLevel > 60 },
+                      { label: 'Limpieza', value: `${zone.camera.cleanlinessScore}%`, warn: zone.camera.cleanlinessScore < 50 },
+                      { label: 'Plagas', value: zone.camera.pestsDetected ? (zone.camera.pestType === 'roedor' ? 'Roedor' : 'Insecto') : 'Ninguna', warn: zone.camera.pestsDetected },
+                      { label: 'Estructura', value: zone.camera.structuralIssues ? 'Daño' : 'OK', warn: zone.camera.structuralIssues },
                     ].map((s) => (
                       <div key={s.label}>
                         <span className="text-[10px] text-slate-500">{s.label} </span>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Send, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, Droplets, Thermometer, Clock, ClipboardList, BarChart2 } from 'lucide-react'
+import { X, Send, Bug, Rat, Trash2, ShieldAlert, ShieldCheck, Wind, MoreHorizontal, Camera, Sparkles, ClipboardList, BarChart2 } from 'lucide-react'
 import { Zone, ReportType, ReportPayload } from '@/lib/types'
 import { getRiskBg, getRiskLabel, getRiskColor } from '@/lib/utils'
 
@@ -183,22 +183,52 @@ export function ZoneSidebar({ zone, onClose }: ZoneSidebarProps) {
                 </span>
               </div>
 
-              {/* Sensors */}
+              {/* Camera snapshot */}
+              {zone.camera.imageUrl && (
+                <div className="relative rounded-xl overflow-hidden bg-slate-900 aspect-video border border-slate-700/60">
+                  <img src={zone.camera.imageUrl} alt="" className="w-full h-full object-cover opacity-75" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute top-2 left-2 flex items-center gap-1.5 bg-black/50 rounded px-2 py-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-[10px] text-white font-medium">EN VIVO</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Camera detections */}
               <div className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4 flex flex-col gap-4">
-                <p className="text-xs text-slate-400 uppercase tracking-wider">Lecturas de sensores</p>
-                <Meter label="Humedad" value={zone.sensors.humidity} unit="%" warn={zone.sensors.humidity > 70} icon={<Droplets size={12} />} />
-                <Meter label="Temperatura" value={zone.sensors.temperature} max={50} unit="°C" warn={zone.sensors.temperature > 28} icon={<Thermometer size={12} />} />
-                <Meter label="Nivel de residuos" value={zone.sensors.wasteLevel} unit="%" warn={zone.sensors.wasteLevel > 60} icon={<Trash2 size={12} />} />
-                <Meter label="Sin limpieza" value={zone.sensors.timeSinceClean} max={8} unit="h" warn={zone.sensors.timeSinceClean > 4} icon={<Clock size={12} />} />
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-slate-400 uppercase tracking-wider">Detecciones de cámara</p>
+                  <span className="text-[10px] text-slate-500">Confianza: {zone.camera.confidence}%</span>
+                </div>
+                <Meter label="Nivel de residuos" value={zone.camera.wasteLevel} unit="%" warn={zone.camera.wasteLevel > 60} icon={<Trash2 size={12} />} />
+                <Meter label="Limpieza" value={zone.camera.cleanlinessScore} unit="%" warn={zone.camera.cleanlinessScore < 50} icon={<Sparkles size={12} />} />
+              </div>
+
+              {/* Pests */}
+              <div className={`rounded-xl border p-4 flex items-center gap-3 ${zone.camera.pestsDetected ? 'border-red-500/30 bg-red-500/10' : 'border-green-500/30 bg-green-500/10'}`}>
+                {zone.camera.pestsDetected
+                  ? (zone.camera.pestType === 'roedor' ? <Rat size={18} className="text-red-400" /> : <Bug size={18} className="text-red-400" />)
+                  : <Camera size={18} className="text-green-400" />}
+                <div>
+                  <p className="text-xs font-semibold text-white">Detección de plagas</p>
+                  <p className={`text-xs mt-0.5 ${zone.camera.pestsDetected ? 'text-red-400' : 'text-green-400'}`}>
+                    {zone.camera.pestsDetected
+                      ? `${zone.camera.pestType === 'roedor' ? 'Roedor' : 'Insecto'} detectado por cámara`
+                      : 'Sin plagas detectadas'}
+                  </p>
+                </div>
               </div>
 
               {/* Structural */}
-              <div className={`rounded-xl border p-4 flex items-center gap-3 ${zone.sensors.structuralOk ? 'border-green-500/30 bg-green-500/10' : 'border-red-500/30 bg-red-500/10'}`}>
-                <ShieldAlert size={18} className={zone.sensors.structuralOk ? 'text-green-400' : 'text-red-400'} />
+              <div className={`rounded-xl border p-4 flex items-center gap-3 ${zone.camera.structuralIssues ? 'border-red-500/30 bg-red-500/10' : 'border-green-500/30 bg-green-500/10'}`}>
+                {zone.camera.structuralIssues
+                  ? <ShieldAlert size={18} className="text-red-400" />
+                  : <ShieldCheck size={18} className="text-green-400" />}
                 <div>
                   <p className="text-xs font-semibold text-white">Integridad estructural</p>
-                  <p className={`text-xs mt-0.5 ${zone.sensors.structuralOk ? 'text-green-400' : 'text-red-400'}`}>
-                    {zone.sensors.structuralOk ? 'Sin daños detectados' : 'Sello o acceso dañado'}
+                  <p className={`text-xs mt-0.5 ${zone.camera.structuralIssues ? 'text-red-400' : 'text-green-400'}`}>
+                    {zone.camera.structuralIssues ? 'Daño estructural detectado' : 'Sin daños detectados'}
                   </p>
                 </div>
               </div>

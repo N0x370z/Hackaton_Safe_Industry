@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Shield, LayoutDashboard, Bell, ClipboardList, Menu, X, Wifi, WifiOff, Plus } from 'lucide-react'
+import { Bug, LayoutDashboard, Bell, ClipboardList, Menu, X, Wifi, WifiOff, Plus } from 'lucide-react'
 import { useDashboard } from '@/hooks/useDashboard'
 import { useDismissedAlerts } from '@/hooks/useDismissedAlerts'
+import { NewZoneDialog } from '@/components/NewZoneDialog'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [reportCount, setReportCount] = useState(0)
   const pathname = usePathname()
   const { data, connected } = useDashboard()
@@ -58,8 +60,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Brand */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-slate-700/60 shrink-0">
           <Link href="/" className="flex items-center gap-2">
-            <Shield size={18} className="text-orange-400" />
-            <span className="font-bold text-white">SafeIndustry</span>
+            <Bug size={18} className="text-orange-400" />
+            <span className="font-bold text-white">PlagueTracker</span>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400">
             <X size={18} />
@@ -95,14 +97,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex flex-col gap-1">
             <div className="flex items-center justify-between px-2 mb-1">
               <p className="text-[10px] text-slate-500 uppercase tracking-wider">Zonas</p>
-              <Link
-                href="/dashboard/zonas/nueva"
-                onClick={() => setSidebarOpen(false)}
+              <button
+                onClick={() => { setSidebarOpen(false); setDialogOpen(true) }}
                 className="flex items-center gap-0.5 text-[10px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
                 title="Añadir zona"
               >
                 <Plus size={12} /> Nueva
-              </Link>
+              </button>
             </div>
             {data.zones.map((zone) => (
               <Link
@@ -148,8 +149,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Menu size={20} />
           </button>
           <div className="flex items-center gap-2">
-            <Shield size={16} className="text-orange-400" />
-            <span className="font-bold text-sm">SafeIndustry</span>
+            <Bug size={16} className="text-orange-400" />
+            <span className="font-bold text-sm">PlagueTracker</span>
           </div>
         </div>
 
@@ -157,6 +158,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </div>
+
+      {dialogOpen && <NewZoneDialog onClose={() => setDialogOpen(false)} />}
     </div>
   )
 }

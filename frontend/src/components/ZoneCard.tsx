@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, Camera } from 'lucide-react'
 import { Zone } from '@/lib/types'
 import { getRiskBg, getRiskLabel, formatTime } from '@/lib/utils'
 import { RiskGauge } from './RiskGauge'
-import { SensorCard } from './SensorCard'
 import { ZoneSidebar } from './ZoneSidebar'
 
 interface ZoneCardProps {
@@ -54,7 +53,26 @@ export function ZoneCard({ zone, selected, onClick }: ZoneCardProps) {
           </div>
         </div>
 
-        <SensorCard sensors={zone.sensors} />
+        {/* Mini camera preview */}
+        <div className="relative rounded-lg overflow-hidden bg-slate-900 h-20 border border-slate-700/60">
+          {zone.camera.imageUrl ? (
+            <img src={zone.camera.imageUrl} alt="" className="w-full h-full object-cover opacity-70" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <Camera size={20} className="text-slate-600" />
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 bg-black/50 rounded px-1.5 py-0.5">
+            <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[9px] text-white">EN VIVO</span>
+          </div>
+          {zone.camera.pestsDetected && (
+            <div className="absolute bottom-1.5 right-1.5 bg-red-500/80 rounded px-1.5 py-0.5">
+              <span className="text-[9px] text-white font-semibold">¡Plaga detectada!</span>
+            </div>
+          )}
+        </div>
 
         {/* Botón principal — ancho completo, no puede perderse */}
         <button

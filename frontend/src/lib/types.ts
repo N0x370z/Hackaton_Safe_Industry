@@ -1,11 +1,15 @@
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical'
 
-export interface SensorReading {
-  humidity: number
-  temperature: number
+export interface CameraAnalysis {
+  imageUrl: string
+  analyzed: boolean
+  lastAnalyzed: string | null
+  pestsDetected: boolean
+  pestType: 'insecto' | 'roedor' | null
   wasteLevel: number
-  timeSinceClean: number
-  structuralOk: boolean
+  cleanlinessScore: number
+  structuralIssues: boolean
+  confidence: number
 }
 
 export interface HistoryPoint {
@@ -16,7 +20,7 @@ export interface HistoryPoint {
 export interface Zone {
   id: string
   name: string
-  sensors: SensorReading
+  camera: CameraAnalysis
   riskScore: number
   riskLevel: RiskLevel
   lastUpdated: string

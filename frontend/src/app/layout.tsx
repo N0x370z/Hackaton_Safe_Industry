@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SafeIndustry — Monitor de Riesgo",
-  description: "Sistema de detección temprana y gestión predictiva de fauna nociva para la industria alimentaria",
+  title: "PlagueTracker — Detección Visual de Plagas",
+  description: "Sistema de detección temprana mediante cámaras y visión artificial para la industria alimentaria",
 };
 
 export default function RootLayout({

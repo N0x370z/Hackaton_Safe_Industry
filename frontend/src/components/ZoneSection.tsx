@@ -5,7 +5,7 @@ import { Send, Bug, Rat, Trash2, ShieldAlert, Wind, MoreHorizontal, TrendingUp, 
 import { Zone, ReportType, ReportPayload } from '@/lib/types'
 import { getRiskBg, getRiskLabel, getRiskColor, formatTime } from '@/lib/utils'
 import { RiskGauge } from './RiskGauge'
-import { SensorCard } from './SensorCard'
+import { CameraCard } from './CameraCard'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -122,8 +122,8 @@ export function ZoneSection({ zone }: ZoneSectionProps) {
         </div>
 
         <div className="p-4 sm:p-5">
-          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-3">Sensores</p>
-          <SensorCard sensors={zone.sensors} />
+          <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-3">Cámara</p>
+          <CameraCard zone={zone} />
         </div>
 
         <div className="p-4 sm:p-5">
