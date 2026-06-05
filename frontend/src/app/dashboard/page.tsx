@@ -32,12 +32,17 @@ export default function DashboardPage() {
       </div>
 
       {/* Alertas */}
-      {data.alerts.length > 0 && (
-        <div id="alertas" className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
-          <h2 className="text-xs font-semibold text-slate-400 mb-3 uppercase tracking-wider">Alertas activas</h2>
-          <AlertPanel alerts={data.alerts} />
+      <div id="alertas" className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alertas activas</h2>
+          {data.alerts.length > 0 && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+              {data.alerts.length} activa{data.alerts.length > 1 ? 's' : ''}
+            </span>
+          )}
         </div>
-      )}
+        <AlertPanel alerts={data.alerts} />
+      </div>
 
       {/* Zonas */}
       <div className="flex flex-col gap-3">

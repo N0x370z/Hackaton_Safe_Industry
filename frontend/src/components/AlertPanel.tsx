@@ -1,51 +1,137 @@
 'use client'
 
-import { AlertTriangle, XCircle, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { AlertTriangle, XCircle, Clock, X, ArrowRight, ShieldCheck } from 'lucide-react'
 import { Alert } from '@/lib/types'
 import { formatTime } from '@/lib/utils'
+
+const LS_DISMISSED_KEY = 'safe_industry_dismissed_alerts'
+
+function getDismissed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(LS_DISMISSED_KEY) || '[]'))
+  } catch {
+    return new Set()
+  }
+}
+
+function dismiss(id: string) {
+  try {
+    const current = getDismissed()
+    current.add(id)
+    localStorage.setItem(LS_DISMISSED_KEY, JSON.stringify([...current]))
+  } catch {}
+}
 
 interface AlertPanelProps {
   alerts: Alert[]
 }
 
 export function AlertPanel({ alerts }: AlertPanelProps) {
-  if (alerts.length === 0) {
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    setDismissed(getDismissed())
+  }, [])
+
+  const visible = alerts.filter((a) => !dismissed.has(a.id))
+
+  function handleDismiss(id: string) {
+    dismiss(id)
+    setDismissed((prev) => new Set([...prev, id]))
+  }
+
+  if (visible.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 py-8 text-slate-500">
-        <div className="text-4xl">✓</div>
-        <p className="text-sm">Sin alertas activas</p>
+      <div className="flex items-center gap-3 py-4 px-3 rounded-xl border border-green-500/20 bg-green-500/5">
+        <div className="p-2 rounded-lg bg-green-500/10 text-green-400 shrink-0">
+          <ShieldCheck size={18} />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-green-400">Sistema saludable</p>
+          <p className="text-xs text-slate-500">Todas las zonas operan dentro de parámetros normales.</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-2">
-      {alerts.map((alert) => (
+      {visible.map((alert) => (
         <div
           key={alert.id}
-          className={`flex gap-3 rounded-lg border p-3 ${
+          className={`relative flex gap-3 rounded-xl border p-3 transition-all ${
             alert.severity === 'danger'
               ? 'border-red-500/40 bg-red-500/10'
               : 'border-yellow-500/40 bg-yellow-500/10'
           }`}
         >
-          <div className="mt-0.5 shrink-0">
+          {/* Pulse ring para danger */}
+          {alert.severity === 'danger' && (
+            <span className="absolute top-3 left-3 flex h-4 w-4">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-30" />
+            </span>
+          )}
+
+          <div className="mt-0.5 shrink-0 z-10">
             {alert.severity === 'danger' ? (
               <XCircle size={16} className="text-red-400" />
             ) : (
               <AlertTriangle size={16} className="text-yellow-400" />
             )}
           </div>
+
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-slate-300 mb-0.5">{alert.zoneName}</p>
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="text-xs font-semibold text-slate-300">{alert.zoneName}</p>
+              <span
+                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wide ${
+                  alert.severity === 'danger'
+                    ? 'bg-red-500/20 text-red-400'
+                    : 'bg-yellow-500/20 text-yellow-400'
+                }`}
+              >
+                {alert.severity === 'danger' ? 'Peligro' : 'Advertencia'}
+              </span>
+            </div>
             <p className="text-xs text-slate-400 leading-relaxed">{alert.message}</p>
-            <div className="flex items-center gap-1 mt-1.5 text-slate-500">
-              <Clock size={10} />
-              <span className="text-[10px]">{formatTime(alert.timestamp)}</span>
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-1 text-slate-500">
+                <Clock size={10} />
+                <span className="text-[10px]">{formatTime(alert.timestamp)}</span>
+              </div>
+              <Link
+                href={`/dashboard/${alert.zoneId}`}
+                className="flex items-center gap-1 text-[10px] font-semibold text-orange-400 hover:text-orange-300 transition-colors"
+              >
+                Ir a zona <ArrowRight size={10} />
+              </Link>
             </div>
           </div>
+
+          {/* Dismiss */}
+          <button
+            onClick={() => handleDismiss(alert.id)}
+            className="shrink-0 mt-0.5 text-slate-600 hover:text-slate-400 transition-colors"
+            aria-label="Descartar alerta"
+          >
+            <X size={14} />
+          </button>
         </div>
       ))}
+
+      {dismissed.size > 0 && (
+        <button
+          onClick={() => {
+            try { localStorage.removeItem(LS_DISMISSED_KEY) } catch {}
+            setDismissed(new Set())
+          }}
+          className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors text-right"
+        >
+          Restaurar {dismissed.size} alerta{dismissed.size > 1 ? 's' : ''} descartada{dismissed.size > 1 ? 's' : ''}
+        </button>
+      )}
     </div>
   )
 }
