@@ -3,15 +3,18 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useDismissedAlerts } from '@/hooks/useDismissedAlerts'
 import { AlertPanel } from '@/components/AlertPanel'
 import { RiskGauge } from '@/components/RiskGauge'
 import { getRiskBg, getRiskLabel, getRiskColor } from '@/lib/utils'
 
 export default function DashboardPage() {
   const { data } = useDashboard()
+  const { dismissed } = useDismissedAlerts()
 
   const criticalCount = data.zones.filter((z) => z.riskLevel === 'critical').length
   const avgRisk = Math.round(data.zones.reduce((a, z) => a + z.riskScore, 0) / data.zones.length)
+  const visibleAlertCount = data.alerts.filter((a) => !dismissed.has(a.id)).length
 
   return (
     <div className="p-4 sm:p-6 flex flex-col gap-6">
@@ -25,8 +28,8 @@ export default function DashboardPage() {
           <p className={`text-xl sm:text-2xl font-bold ${criticalCount > 0 ? 'text-red-400' : 'text-white'}`}>{criticalCount}</p>
           <p className="text-[11px] sm:text-xs text-slate-400 mt-1">Zonas críticas</p>
         </div>
-        <div className={`rounded-xl border p-3 sm:p-4 text-center ${data.alerts.length > 0 ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
-          <p className={`text-xl sm:text-2xl font-bold ${data.alerts.length > 0 ? 'text-yellow-400' : 'text-white'}`}>{data.alerts.length}</p>
+        <div className={`rounded-xl border p-3 sm:p-4 text-center ${visibleAlertCount > 0 ? 'border-yellow-500/40 bg-yellow-500/10' : 'border-slate-700/60 bg-slate-800/40'}`}>
+          <p className={`text-xl sm:text-2xl font-bold ${visibleAlertCount > 0 ? 'text-yellow-400' : 'text-white'}`}>{visibleAlertCount}</p>
           <p className="text-[11px] sm:text-xs text-slate-400 mt-1">Alertas activas</p>
         </div>
       </div>
@@ -35,9 +38,9 @@ export default function DashboardPage() {
       <div id="alertas" className="rounded-xl border border-slate-700/60 bg-slate-800/40 p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alertas activas</h2>
-          {data.alerts.length > 0 && (
+          {visibleAlertCount > 0 && (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
-              {data.alerts.length} activa{data.alerts.length > 1 ? 's' : ''}
+              {visibleAlertCount} activa{visibleAlertCount > 1 ? 's' : ''}
             </span>
           )}
         </div>

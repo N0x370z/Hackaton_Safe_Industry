@@ -1,57 +1,45 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, XCircle, Clock, X, ArrowRight, ShieldCheck } from 'lucide-react'
 import { Alert } from '@/lib/types'
 import { formatTime } from '@/lib/utils'
-
-const LS_DISMISSED_KEY = 'safe_industry_dismissed_alerts'
-
-function getDismissed(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(LS_DISMISSED_KEY) || '[]'))
-  } catch {
-    return new Set()
-  }
-}
-
-function dismiss(id: string) {
-  try {
-    const current = getDismissed()
-    current.add(id)
-    localStorage.setItem(LS_DISMISSED_KEY, JSON.stringify([...current]))
-  } catch {}
-}
+import { useDismissedAlerts } from '@/hooks/useDismissedAlerts'
 
 interface AlertPanelProps {
   alerts: Alert[]
 }
 
 export function AlertPanel({ alerts }: AlertPanelProps) {
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
-
-  useEffect(() => {
-    setDismissed(getDismissed())
-  }, [])
+  const { dismissed, dismiss, restore } = useDismissedAlerts()
 
   const visible = alerts.filter((a) => !dismissed.has(a.id))
-
-  function handleDismiss(id: string) {
-    dismiss(id)
-    setDismissed((prev) => new Set([...prev, id]))
-  }
+  const dismissedCount = alerts.filter((a) => dismissed.has(a.id)).size ?? dismissed.size
 
   if (visible.length === 0) {
     return (
-      <div className="flex items-center gap-3 py-4 px-3 rounded-xl border border-green-500/20 bg-green-500/5">
-        <div className="p-2 rounded-lg bg-green-500/10 text-green-400 shrink-0">
-          <ShieldCheck size={18} />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-3 py-4 px-3 rounded-xl border border-green-500/20 bg-green-500/5">
+          <div className="p-2 rounded-lg bg-green-500/10 text-green-400 shrink-0">
+            <ShieldCheck size={18} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-green-400">Sistema saludable</p>
+            <p className="text-xs text-slate-500">
+              {dismissed.size > 0
+                ? `${dismissed.size} alerta${dismissed.size > 1 ? 's' : ''} silenciada${dismissed.size > 1 ? 's' : ''} — reaparecerán en ~2 min si persiste la condición.`
+                : 'Todas las zonas operan dentro de parámetros normales.'}
+            </p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-semibold text-green-400">Sistema saludable</p>
-          <p className="text-xs text-slate-500">Todas las zonas operan dentro de parámetros normales.</p>
-        </div>
+        {dismissed.size > 0 && (
+          <button
+            onClick={restore}
+            className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors text-right"
+          >
+            Mostrar ahora ({dismissed.size})
+          </button>
+        )}
       </div>
     )
   }
@@ -67,7 +55,6 @@ export function AlertPanel({ alerts }: AlertPanelProps) {
               : 'border-yellow-500/40 bg-yellow-500/10'
           }`}
         >
-          {/* Pulse ring para danger */}
           {alert.severity === 'danger' && (
             <span className="absolute top-3 left-3 flex h-4 w-4">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-30" />
@@ -110,11 +97,10 @@ export function AlertPanel({ alerts }: AlertPanelProps) {
             </div>
           </div>
 
-          {/* Dismiss */}
           <button
-            onClick={() => handleDismiss(alert.id)}
+            onClick={() => dismiss(alert.id)}
             className="shrink-0 mt-0.5 text-slate-600 hover:text-slate-400 transition-colors"
-            aria-label="Descartar alerta"
+            aria-label="Silenciar alerta 2 min"
           >
             <X size={14} />
           </button>
@@ -123,13 +109,10 @@ export function AlertPanel({ alerts }: AlertPanelProps) {
 
       {dismissed.size > 0 && (
         <button
-          onClick={() => {
-            try { localStorage.removeItem(LS_DISMISSED_KEY) } catch {}
-            setDismissed(new Set())
-          }}
+          onClick={restore}
           className="text-[10px] text-slate-600 hover:text-slate-400 transition-colors text-right"
         >
-          Restaurar {dismissed.size} alerta{dismissed.size > 1 ? 's' : ''} descartada{dismissed.size > 1 ? 's' : ''}
+          Mostrar {dismissed.size} silenciada{dismissed.size > 1 ? 's' : ''}
         </button>
       )}
     </div>

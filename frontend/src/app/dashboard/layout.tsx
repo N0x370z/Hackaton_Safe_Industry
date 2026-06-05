@@ -5,12 +5,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Shield, LayoutDashboard, Bell, ClipboardList, Menu, X, Wifi, WifiOff } from 'lucide-react'
 import { useDashboard } from '@/hooks/useDashboard'
+import { useDismissedAlerts } from '@/hooks/useDismissedAlerts'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [reportCount, setReportCount] = useState(0)
   const pathname = usePathname()
   const { data, connected } = useDashboard()
+  const { dismissed } = useDismissedAlerts()
 
   useEffect(() => {
     function syncCount() {
@@ -27,7 +29,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={16} />, exact: true },
-    { href: '/dashboard#alertas', label: 'Alertas', icon: <Bell size={16} />, badge: data.alerts.length },
+    { href: '/dashboard#alertas', label: 'Alertas', icon: <Bell size={16} />, badge: data.alerts.filter((a) => !dismissed.has(a.id)).length },
     { href: '/dashboard/reportes', label: 'Reportes', icon: <ClipboardList size={16} />, badge: reportCount, exact: false },
   ]
 
